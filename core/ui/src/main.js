@@ -59,12 +59,52 @@ for (const f in Filters) {
 
 // i18n
 import VueI18n from "vue-i18n";
+import messages from '../public/i18n/en/translation.json'
+
 Vue.use(VueI18n);
-const i18n = new VueI18n();
-const langCode = navigator.language.substring(0, 2);
-const messages = require("../public/i18n/"+langCode+"/translation.json");
-i18n.setLocaleMessage(langCode, messages);
-i18n.locale = langCode;
+
+// const i18n = new VueI18n(); //// 
+// const langCode = navigator.language.substring(0, 2);
+// const messages = require("../public/i18n/"+langCode+"/translation.json");
+// i18n.setLocaleMessage(langCode, messages);
+// i18n.locale = langCode;
+
+const i18n = new VueI18n({locale: 'en', // set locale
+  fallbackLocale: 'en',
+  messages // set locale messages
+})
+
+const loadedLanguages = ['en'] // our default language that is preloaded
+
+function setI18nLanguage (lang) {
+  i18n.locale = lang
+  axios.defaults.headers.common['Accept-Language'] = lang
+  document.querySelector('html').setAttribute('lang', lang)
+  return lang
+}
+
+export function loadLanguageAsync(lang) {
+  // If the same language
+  if (i18n.locale === lang) {
+    return Promise.resolve(setI18nLanguage(lang))
+  }
+
+  // If the language was already loaded
+  if (loadedLanguages.includes(lang)) {
+    return Promise.resolve(setI18nLanguage(lang))
+  }
+
+  // If the language hasn't been loaded yet
+  return import(/* webpackChunkName: "lang-[request]" */ `../public/i18n/${lang}/translation.json`).then(
+    messages => {
+      i18n.setLocaleMessage(lang, messages.default)
+      loadedLanguages.push(lang)
+      return setI18nLanguage(lang)
+    }
+  )
+}
+
+loadLanguageAsync('en')
 
 //// move somewhere else?
 const toastOptions = {
