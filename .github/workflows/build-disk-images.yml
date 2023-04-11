@@ -1,0 +1,13 @@
+name: Build NS8 disk images
+on:
+  workflow_run:
+    workflows: [dummy]
+    types:
+      - completed
+
+jobs:
+  core-version:
+    runs-on: ubuntu-latest
+    steps:
+      - id: check
+        run: echo "stable=${{ github.event.workflow_run.head_branch }}" >> "$GITHUB_OUTPUT"
