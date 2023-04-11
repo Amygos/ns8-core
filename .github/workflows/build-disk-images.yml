@@ -1,0 +1,26 @@
+name: Build NS8 disk images
+on:
+  workflow_run:
+    workflows: [dummy]
+    types:
+      - completed
+
+jobs:
+  core-version:
+    runs-on: ubuntu-latest
+    steps:
+      - id: python-dep
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+      - id: check
+        run: |
+          pip install semver
+          python3 -c 'import semver, sys; sys.exit(1) if semver.VersionInfo.parse("${{ github.event.workflow_run.head_branch }}").prerelease else sys.exit(0)'
+  build-imges:
+    runs-on: ubuntu-latest
+    needs:
+      - core-version
+    steps:
+      - id: packer 
+        run: echo ok
