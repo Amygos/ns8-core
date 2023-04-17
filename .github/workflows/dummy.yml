@@ -1,0 +1,9 @@
+name: dummy
+on:
+  push:
+
+jobs:
+  bar:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo foo
