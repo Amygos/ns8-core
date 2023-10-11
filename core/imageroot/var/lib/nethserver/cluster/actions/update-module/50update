@@ -32,7 +32,6 @@ request = json.load(sys.stdin)
 image_url= request.get('module_url')
 instances = request['instances']
 image_id = ''
-
 force = "force" in request and request["force"] is True
 
 rdb = agent.redis_connect(privileged=True)
@@ -57,7 +56,6 @@ ping_errors = agent.tasks.runp_brief([{"agent_id": f"module/{mid}", "action": "l
     progress_callback=agent.get_progress_callback(1, 30),
 )
 agent.assert_exp(ping_errors == 0)
-
 
 if not force:
     # Pull the image from the remote server, if not already available locally
