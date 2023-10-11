@@ -33,6 +33,8 @@ image_url= request.get('module_url')
 instances = request['instances']
 image_id = ''
 
+force = "force" in request and request["force"] is True
+
 rdb = agent.redis_connect(privileged=True)
 
 # Explicit image_url always wins
@@ -56,10 +58,14 @@ ping_errors = agent.tasks.runp_brief([{"agent_id": f"module/{mid}", "action": "l
 )
 agent.assert_exp(ping_errors == 0)
 
-# Pull the image from the remote server, if not already available locally
-agent.run_helper('podman-pull-missing', image_url,
-    progress_callback=agent.get_progress_callback(0,30)
-).check_returncode()
+
+if not force:
+    # Pull the image from the remote server, if not already available locally
+    agent.run_helper('podman-pull-missing', image_url,
+        progress_callback=agent.get_progress_callback(0,30)
+    ).check_returncode()
+else:
+    subprocess.run(['podman', 'pull', image_url]).check_returncode()
 
 # Retrieve the image org.nethserver.authorizations label
 with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
@@ -89,7 +95,8 @@ for module_id in instances:
         "agent_id": f"module/{module_id}",
         "action": "update-module",
         "data": {
-            "module_url": image_url
+            "module_url": image_url,
+            "force" : force
         }
     })
 

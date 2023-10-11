@@ -36,6 +36,10 @@
                 "pattern": "^.+[0-9]+$"
             },
             "minItems": 1
+        },
+        "force": {
+            "type": "boolean",
+             "default": false
         }
     }
 }
